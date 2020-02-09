@@ -1,2 +1,2 @@
 # HelloWorld
-My first program
+My first appplication
