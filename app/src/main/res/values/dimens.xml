@@ -1,0 +1,24 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="nav_header_vertical_spacing">8dp</dimen>
+    <dimen name="nav_header_height">176dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="activity_margin_5">5dp</dimen>
+    <dimen name="activity_margin_10">10dp</dimen>
+    <dimen name="activity_margin_16">16dp</dimen>
+
+    <dimen name="text_size_14">14sp</dimen>
+    <dimen name="text_size_16">16sp</dimen>
+    <dimen name="text_size_18">18sp</dimen>
+    <dimen name="text_size_20">20sp</dimen>
+
+    <!--pup up window-->
+    <dimen name="popup_menu_item_height">50dp</dimen>
+    <dimen name="popup_menu_horizontal_gap">20dp</dimen>
+
+    <dimen name="grid_expected_size">120dp</dimen>
+
+</resources>

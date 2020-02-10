@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/icon_notes"
+            android:icon="@drawable/icon_notes"
+            android:title="所有笔记" />
+        <item
+            android:id="@+id/icon_notebook"
+            android:icon="@drawable/icon_notebook"
+            android:title="笔记本" />
+        <item
+            android:id="@+id/icon_english_cards"
+            android:icon="@drawable/icon_english_cards"
+            android:title="单词卡片" />
+        <item
+            android:id="@+id/icon_favorite"
+            android:icon="@drawable/icon_favorite"
+            android:title="我的收藏" />
+        <item
+            android:id="@+id/icon_tasks"
+            android:icon="@drawable/icon_tasks"
+            android:title="任务清单" />
+        <item
+            android:id="@+id/icon_day_matters"
+            android:icon="@drawable/icon_day_matters"
+            android:title="倒数日" />
+        <item
+            android:id="@+id/icon_timer"
+            android:icon="@drawable/icon_timer"
+            android:title="计时器" />
+        <item
+            android:id="@+id/icon_calendar"
+            android:icon="@drawable/icon_calendar"
+            android:title="日历" />
+        <item
+            android:id="@+id/icon_info_analyse"
+            android:icon="@drawable/icon_info_analyse"
+            android:title="信息分析" />
+        <item
+            android:id="@+id/icon_review_tasks"
+            android:icon="@drawable/icon_review_tasks"
+            android:title="复习计划" />
+
+        <item
+            android:id="@+id/icon_settings"
+            android:icon="@drawable/icon_settings"
+            android:title="设置" />
+
+    </group>
+
+
+</menu>

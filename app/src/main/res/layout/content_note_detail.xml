@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="50dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:showIn="@layout/activity_note">
+
+    <EditText
+        android:id="@+id/ed_new_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorWhite"
+        android:hint="请输入标题"
+        android:padding="@dimen/activity_margin_16"
+        android:textColor="@color/grey_700"
+        android:textSize="@dimen/text_size_18" />
+    <requestFocus />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="@dimen/activity_margin_16"
+        android:paddingRight="@dimen/activity_margin_16"
+        android:background="@color/colorWhite">
+
+        <Button
+            android:id="@+id/btn_group_name"
+            android:drawableLeft="@drawable/icon_arrow"
+            android:paddingLeft="10dp"
+            android:layout_width="160dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="5dp"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/bg_group_btn"
+            android:text="默认笔记"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <CheckBox
+            android:id="@+id/cb_add_review"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="加入复习计划"/>
+
+    </RelativeLayout>
+
+    <com.sendtion.xrichtext.RichTextEditor
+        android:id="@+id/et_new_note"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:rt_editor_image_bottom="10"
+        app:rt_editor_image_height="500"
+        android:background="@color/grey_200"
+        app:rt_editor_text_color="@color/grey_900"
+        app:rt_editor_text_init_hint="在这里输入内容"
+        app:rt_editor_text_line_space="6dp"
+        app:rt_editor_text_size="16sp" />
+
+</LinearLayout>
