@@ -10,9 +10,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <!--解决项目minSDK与第三方库minSDK不一致情况-->
-    <!--<uses-sdk tools:overrideLibrary="com.github.ielse.imagewatcher"/>-->
-
     <application
         android:name=".BaseApplication"
         android:allowBackup="true"
@@ -22,7 +19,21 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="HardcodedDebugMode">
-        <activity android:name=".Activity.NoteActivity"
+        <activity android:name=".Activity.GroupDetailActivity"></activity>
+        <activity android:name=".Activity.NoteDetailActivity" />
+        <activity
+            android:name=".Activity.NoteActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".Activity.MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".Activity.LoginActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".Activity.BaseActivity" />
+        <activity
+            android:name=".Activity.WelcomeActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,19 +41,17 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
-        <activity
-            android:name=".Activity.MainActivity"
-            android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity
-            android:name=".Activity.LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar">
 
-        </activity>
-        <activity android:name=".Activity.BaseActivity" />
-        <activity android:name=".Activity.WelcomeActivity"></activity>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.sendtion.matisse.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

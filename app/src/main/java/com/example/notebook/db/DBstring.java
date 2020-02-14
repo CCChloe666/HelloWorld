@@ -3,7 +3,7 @@ package com.example.notebook.db;
 public class DBstring {
     public static final String DB_NAME = "db_notebook";
 
-    public static final int DB_VERSION = 2;
+    public static final int DB_VERSION = 6;
 
     public static final String CREATE_WASTED_TABLE = "create table wasted_notes ("
             + "id integer primary key autoincrement,"
@@ -13,7 +13,8 @@ public class DBstring {
             + "address text,"
             + "timestamp float, "
             + "lastmodify float,"
-            + "iswasted integer"
+            + "iswasted integer,"
+            + "user_name text"
             + ")";
 
 
@@ -30,44 +31,42 @@ public class DBstring {
             + "content text,"
             + "createTime text,"
             + "groupId integer,"
-            +"groupName text,"
-            + "type integer,"
-            + "bgColor text,"
-            +"isAdded int,"
-            + "isWasted integer"
+            + "groupName text,"
+            + "isAdded integer,"
+            + "isWasted integer,"
+            + "isStared integer,"
+            + "user_name text"
             + ")";
 
     public static final String CREATE_GROUP = "create table group_note ("
             + "id integer primary key autoincrement,"
             + "name text,"
-            + "createTime text"
+            + "createTime text,"
+            + "user_name text"
             + ")";
 
     public static final String CREATE_TASK = "create table task ("
             + "id integer primary key autoincrement,"
             + "name text,"
             + "score integer,"
-            + "createTime text"
+            + "createTime text,"
+            + "user_name text"
             + ")";
 
     public static final String CREATE_CARD = "create table card ("
             + "id integer primary key autoincrement,"
             + "title text,"
             + "front_content text,"
-            + "back_content text"
+            + "back_content text,"
+            + "user_name text"
             + ")";
 
     public static final String CREATE_DAYMATTER = "create table daymatter ("
             + "id integer primary key autoincrement,"
             + "title text,"
             + "aimTime text,"
-            + "createTime text"
+            + "createTime text,"
+            + "user_name text"
             + ")";
-
-
-
-
-
-
 
 }

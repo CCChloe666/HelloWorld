@@ -23,7 +23,7 @@
         <item
             android:id="@+id/icon_tasks"
             android:icon="@drawable/icon_tasks"
-            android:title="任务清单" />
+            android:title="今日任务" />
         <item
             android:id="@+id/icon_day_matters"
             android:icon="@drawable/icon_day_matters"
@@ -44,6 +44,11 @@
             android:id="@+id/icon_review_tasks"
             android:icon="@drawable/icon_review_tasks"
             android:title="复习计划" />
+
+        <item
+            android:id="@+id/icon_trash_can"
+            android:icon="@drawable/icon_trash_can"
+            android:title="废纸篓" />
 
         <item
             android:id="@+id/icon_settings"

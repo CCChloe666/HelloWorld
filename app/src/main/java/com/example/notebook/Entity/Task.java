@@ -1,7 +1,11 @@
 package com.example.notebook.Entity;
 
 
-public class Task {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+
+public class Task implements Parcelable {
 
     private int id;
 
@@ -10,6 +14,42 @@ public class Task {
     private int score;
 
     private String createTime;
+
+    public Task(){
+
+    }
+
+    protected Task(Parcel in) {
+        id = in.readInt();
+        name = in.readString();
+        score = in.readInt();
+        createTime = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(name);
+        dest.writeInt(score);
+        dest.writeString(createTime);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Task> CREATOR = new Creator<Task>() {
+        @Override
+        public Task createFromParcel(Parcel in) {
+            return new Task(in);
+        }
+
+        @Override
+        public Task[] newArray(int size) {
+            return new Task[size];
+        }
+    };
 
     public String getName() {
         return name;

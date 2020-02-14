@@ -16,6 +16,21 @@
     <string name="menu_send">Send</string>
 
     <!--自定义String-->
+    <!--toolbar标题-->
+    <string name="tb_title_notes">所有笔记</string>
+    <string name="tb_title_groups">笔记本</string>
+    <string name="tb_title_cards">单词卡片</string>
+    <string name="tb_title_star">我的收藏</string>
+    <string name="tb_title_tasks">今日任务</string>
+    <string name="tb_title_days">倒数日</string>
+    <string name="tb_title_timer">计时器</string>
+    <string name="tb_title_calendar">日历</string>
+    <string name="tb_title_info">信息分析</string>
+    <string name="tb_title_review">复习计划</string>
+    <string name="tb_title_trash">废纸篓</string>
+    <string name="tb_title_setting">设置</string>
+
+    <!--登陆页面-->
     <string name="btn_login_text">登录</string>
     <string name="btn_get_veri">获取验证码</string>
 
@@ -32,17 +47,28 @@
     <string name="text_under_register">注册</string>
     <string name="text_under_login">登录</string>
     <string name="btn_confirm">确定</string>
-    
+
     <!--Toast显示信息-->
     <string name="toast_input_empty">信息未填写完整!</string>
     <string name="toast_input_pwd_differ">两次密码输入不一致</string>
     <string name="toast_input_code">验证码输入错误</string>
-    
+
     <!--menu-->
+    <string name="menu_clear">清空</string>
     <string name="menu_delete">删除</string>
     <string name="menu_get_image">生成图片</string>
     <string name="menu_photo">照片</string>
     <string name="menu_write">手绘</string>
+
+    <!--主界面长按弹出菜单-->
+    <string name="dialog_rename">重命名</string>
+    <string name="dialog_star">添加到我的收藏</string>
+    <string name="dialog_remove">删除</string>
+    <string name="dialog_remove_forever">彻底删除</string>
+    <string name="dialog_recovery">恢复</string>
+    <string name="dialog_unstar">取消收藏</string>
+    <string name="dialog_put_in_trashcan">放入废纸篓</string>
+    <!--废纸篓长按弹出菜单-->
 
     <!--Permission-->
     <string name="need_read_storage_permission">需要您授予读取外部存储权限以便访问您的相册图片</string>

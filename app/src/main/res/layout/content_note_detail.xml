@@ -37,9 +37,10 @@
             android:layout_marginBottom="5dp"
             android:layout_alignParentLeft="true"
             android:background="@drawable/bg_group_btn"
-            android:text="默认笔记"
+            android:text="选择笔记本"
             android:maxLines="1"
-            android:ellipsize="end"/>
+            android:ellipsize="end"
+            android:textAllCaps="false"/>
 
         <CheckBox
             android:id="@+id/cb_add_review"

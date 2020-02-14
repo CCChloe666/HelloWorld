@@ -24,7 +24,8 @@ import com.example.notebook.Util.ToastUtil;
 import com.example.notebook.db.UserDao;
 
 public class RegisterFragment extends BaseFragment implements View.OnClickListener {
-    private Context mContext;
+    public static final String REGEX_EMAIL = "^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+    private static final String REGEX_PHONE_NUMBER = "^(0(10|2\\d|[3-9]\\d\\d)[- ]{0,3}\\d{7,8}|0?1[3584]\\d{9})$";
 
     private EditText mEdit_phone;
     private EditText mEdit_pwd;
@@ -36,7 +37,7 @@ public class RegisterFragment extends BaseFragment implements View.OnClickListen
 
     private View mView;
 
-    private String name,pwd,pwd_again,code,code_input;
+    private String name, pwd, pwd_again, code, code_input;
 
     @Override
     public View initView() {
@@ -87,20 +88,23 @@ public class RegisterFragment extends BaseFragment implements View.OnClickListen
         getInfo();
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(pwd) || TextUtils.isEmpty(pwd_again) || TextUtils.isEmpty(code_input)) {
             ToastUtil.showMsg(mActivity, "信息未填写完整");
-        } else if (!pwd.equals(pwd_again)) {
+        }
+//        else if () {
+//正则表达式判断 手机号 邮箱
+//        }
+        else if (!pwd.equals(pwd_again)) {
             ToastUtil.showMsg(mActivity, "两次密码输入不一致");
         } else if (!code_input.equals(code)) {
             ToastUtil.showMsg(mActivity, "验证码输入错误");
-        } else{
+        } else {
             UserDao userDao = new UserDao(mActivity);
-            userDao.register(name,pwd);
-            ToastUtil.showMsg(mActivity,"注册成功");
+            userDao.register(name, pwd);
+            ToastUtil.showMsg(mActivity, "注册成功");
         }
 
     }
 
-
-    public void getInfo(){
+    public void getInfo() {
         this.name = mEdit_phone.getText().toString().trim();
         this.pwd = mEdit_pwd.getText().toString().trim();
         this.pwd_again = mEdit_pwd_again.getText().toString().trim();
@@ -111,9 +115,6 @@ public class RegisterFragment extends BaseFragment implements View.OnClickListen
         mImage_code.setImageBitmap(CodeUtil.getInstance().createBitmap());
         this.code = CodeUtil.getInstance().getCode().toLowerCase();
     }
-
-
-
 
 
 }

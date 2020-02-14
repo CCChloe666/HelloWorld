@@ -4,20 +4,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.notebook.Activity.BaseActivity;
 import com.example.notebook.Activity.MainActivity;
+import com.example.notebook.BaseApplication;
 import com.example.notebook.R;
+import com.example.notebook.Util.CommonUtil;
 import com.example.notebook.Util.ToastUtil;
+import com.example.notebook.db.GroupDao;
 import com.example.notebook.db.UserDao;
+
+import java.util.Date;
 
 
 public class LoginFragment extends BaseFragment implements View.OnClickListener {
 
+    private static final String TAG = "LoginFragment";
     private Context mContext;
 
     private SharedPreferences pref;
@@ -45,11 +53,11 @@ public class LoginFragment extends BaseFragment implements View.OnClickListener 
 
             //记住密码 自动显示
             pref = PreferenceManager.getDefaultSharedPreferences(mActivity);
-            boolean isRemember = pref.getBoolean("remember_pwd",false);
-            if(isRemember){
-                name = pref.getString("user_name","");
-                pwd = pref.getString("user_pwd","");
-                mCb_remember.setChecked(pref.getBoolean("remember_pwd",true));
+            boolean isRemember = pref.getBoolean("remember_pwd", false);
+            if (isRemember) {
+                name = pref.getString("user_name", "");
+                pwd = pref.getString("user_pwd", "");
+                mCb_remember.setChecked(pref.getBoolean("remember_pwd", true));
                 mEdit_name.setText(name);
                 mEdit_pwd.setText(pwd);
             }
@@ -64,9 +72,8 @@ public class LoginFragment extends BaseFragment implements View.OnClickListener 
 
     @Override
     public void onClick(View v) {
-        this.name = mEdit_name.getText().toString();
-        this.pwd = mEdit_pwd.getText().toString();
-
+        this.name = mEdit_name.getText().toString().trim();
+        this.pwd = mEdit_pwd.getText().toString().trim();
         switch (v.getId()) {
             case R.id.text_under_login_pwd:
                 //切换到pwdLoginFragment
@@ -83,22 +90,35 @@ public class LoginFragment extends BaseFragment implements View.OnClickListener 
     public void Login(String name, String pwd) {
         Intent intent = null;
         UserDao userDao = new UserDao(mActivity);
-        if(userDao.login(name,pwd)){
+        boolean flag = userDao.login(name, pwd);
+        if (flag) {
             intent = new Intent(mActivity, MainActivity.class);
-            if(mCb_remember.isChecked()){//用户名密码都正确才可以记住
+
+            BaseApplication baseApplication = (BaseApplication) BaseApplication.getInstance();
+            baseApplication.setUser_name(name);
+            baseApplication.setUser_pwd(pwd);
+            setDefault();
+//            Log.d(TAG, "Login: " + name);
+
+            if (mCb_remember.isChecked()) {//用户名密码都正确才可以记住
                 editor = pref.edit();
-                editor.putBoolean("remember_pwd",true);
-                editor.putString("user_name",name);
-                editor.putString("user_pwd",pwd);
+                editor.putBoolean("remember_pwd", true);
+                editor.putString("user_name", name);
+                editor.putString("user_pwd", pwd);
                 editor.apply();
             }
-
-        }else{
-            ToastUtil.showMsg(mActivity,"用户名或密码不正确");
+            startActivity(intent);
+//            Log.d(TAG, "Login: " + flag);
+        } else {
+            ToastUtil.showMsg(mActivity, "用户名或密码不正确");
         }
-        startActivity(intent);
     }
 
+    public void setDefault() {
+        Log.d(TAG, "setDefault: " + name);
+        GroupDao groupDao = new GroupDao(mActivity);
+
+    }
 
 
 }

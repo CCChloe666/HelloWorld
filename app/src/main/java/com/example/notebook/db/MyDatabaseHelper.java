@@ -38,6 +38,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("drop table if exists card");
         db.execSQL("drop table if exists wasted_notes");
         onCreate(db);
-        ToastUtil.showMsg(mContext,"it changed.");
+        ToastUtil.showMsg(mContext,"数据库changed.");
     }
 }

@@ -9,16 +9,10 @@
         app:showAsAction="always"
         tools:ignore="MenuTitle" />
     <item
-        android:id="@+id/menu_camera"
-        android:icon="@drawable/menu_camera"
-        android:orderInCategory="3"
-        app:showAsAction="always"
-        tools:ignore="MenuTitle" />
-    <item
         android:id="@+id/menu_delete"
         android:icon="@drawable/icon_trash_can"
         android:orderInCategory="4"
-        android:title="@string/menu_delete"
+        android:title="@string/menu_clear"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_get_image"

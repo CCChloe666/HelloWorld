@@ -5,20 +5,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import com.example.notebook.Fragment.LoginFragment;
 import com.example.notebook.Fragment.RegisterFragment;
 import com.example.notebook.R;
-import com.example.notebook.db.DBstring;
-import com.example.notebook.db.MyDatabaseHelper;
 
-public class LoginActivity extends AppCompatActivity {
-
+public class LoginActivity extends BaseActivity {
 
     private LoginFragment mLoginFragement = new LoginFragment();
     private RegisterFragment mRegisterFragment = new RegisterFragment();
@@ -26,24 +19,12 @@ public class LoginActivity extends AppCompatActivity {
     private FragmentManager mFragmentManager;
     private FragmentTransaction mFragmentTransaction;
 
-    private EditText mEdit_phone;
-    private EditText mEdit_pwd;
-    private Button mBtn_login;
-    private TextView mText_login_pwd;
-    private TextView mText_login_ver;
-    private TextView mText_login_forget_pwd;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         initFragments();
-
-
-
     }
-
-
 
     private void initFragments() {
         mFragmentManager = getSupportFragmentManager();
@@ -68,16 +49,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     }
-
-    public void initView(){
-
-    }
-
-    public void initRegister(){
-
-    }
-
-
 
 
 

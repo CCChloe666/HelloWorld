@@ -2,34 +2,38 @@ package com.example.notebook.Activity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListPopupWindow;
-import android.widget.TextView;
 
+import com.example.notebook.BaseApplication;
 import com.example.notebook.Entity.Group;
 import com.example.notebook.Entity.Note;
 import com.example.notebook.R;
-import com.example.notebook.Util.AttachmentHelper;
 import com.example.notebook.Util.CommonUtil;
+import com.example.notebook.Util.GlideSimpleLoader;
 import com.example.notebook.Util.ImageUtils;
+import com.example.notebook.Util.ImageWatcher.ImageWatcherHelper;
 import com.example.notebook.Util.MyGlideEngine;
 import com.example.notebook.Util.PopupWindowFactory;
 import com.example.notebook.Util.SDCardUtil;
@@ -42,7 +46,9 @@ import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -55,6 +61,7 @@ import io.reactivex.schedulers.Schedulers;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class NoteActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
+    private static final String TAG = "NoteActivity";
     private static final int REQUEST_CODE_CHOOSE = 23;//定义请求码常量
     private static final int RC_READ_EXTERNAL_STORAGE = 11;
 
@@ -70,11 +77,24 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
     private GroupDao groupDao;
     private NoteDao noteDao;
     private List<Group> groupList;
-    private Note note;
-    private int flag;//区分是新建笔记还是编辑笔记
+    private Note mNote;
+
+    private String name;
+
+    private Intent intent;
+
+    private String myTitle;
+    private String myContent;
+    private int myGroupId = 0;
+    private String myCreateTime;
+    private String myGroupName;
+    private int isWasted = 0;
+    private int isAdded = 0;
 
     private Disposable subsLoading;
     private Disposable subsInsert;
+    private Disposable mDisposable;
+    private ImageWatcherHelper iwHelper;
 
     private int screenWidth;
     private int screenHeight;
@@ -89,18 +109,22 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
      */
     private String[] mAttachmentPopMenuTexts;
 
+    private HashMap<Integer, String> mGroupPopMenuMap;
     private String[] mGroupPopMenuTexts;
+    private int[] mGroupPopupIcon;
 
-//    private Attachment mAttachment = new Attachment();
+    private AlertDialog.Builder builder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
+        BaseApplication baseApplication = (BaseApplication) BaseApplication.getInstance();
+        name = baseApplication.getUser_name();
         initView();
         initInternalData();
+        setGroupPopupList();
     }
-
 
     private void initView() {
         et_new_title = findViewById(R.id.ed_new_title);
@@ -110,10 +134,40 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
         btn_new_group.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //出现分组
                 showGroupPopupList();
             }
         });
+
+        iwHelper = ImageWatcherHelper.with(this, new GlideSimpleLoader());
+
+        intent = getIntent();
+
+//        Log.d(TAG, "initView: " + (intent!=null));
+        if (intent != null) {
+            mNote = intent.getParcelableExtra("note_item");
+            if(mNote!=null){
+                myGroupId = mNote.getGroupId();
+                myGroupName = mNote.getGroupName();
+                myTitle = mNote.getTitle();
+                myContent = mNote.getContent();
+                btn_new_group.setText(myGroupName);
+                if (mNote.getIsAdded() == 1) {
+                    cb_add_review.setChecked(true);
+                }
+                et_new_title.setText(myTitle);
+                et_new_content.post(new Runnable() {
+                    @Override
+                    public void run() {
+                dealwithContent();
+            }
+        });
+    }
+        }//if (intent != null)
+
+
+        //实例化note ,group
+        groupDao = new GroupDao(this);
+        noteDao = new NoteDao(this);
 
         screenWidth = CommonUtil.getScreenWidth(this);
         screenHeight = CommonUtil.getScreenHeight(this);
@@ -126,27 +180,37 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                ToastUtil.showMsg(NoteActivity.this, "back!");
-//                dealwithExit();
+                dealwithExit();
             }
         });
-
-//        openSoftKeyInput();//打开软键盘显示
-
+        openSoftKeyInput();//打开软键盘显示
+        dealwithContent();
     }
 
-
     public void setGroupPopupList() {
-        groupDao = new GroupDao(this);
-        groupList = groupDao.queryGroupAll();
-        mGroupPopMenuTexts = new String[]{};
+        groupDao = new GroupDao(NoteActivity.this);
+        groupList = groupDao.queryGroupAll(name);
+        Log.d(TAG, "setGroupPopupList: "+groupList.size());
+
+        mGroupPopMenuMap = new HashMap<Integer, String>();
         for (int i = 0; i < groupList.size(); i++) {
-            mGroupPopMenuTexts[i] = groupList.get(i).getName();
+            Group g = groupList.get(i);
+            mGroupPopMenuMap.put(i, g.getName());
         }
+
+        mGroupPopMenuTexts = new String[mGroupPopMenuMap.size()];
+        for (int i = 0; i < mGroupPopMenuMap.size(); i++) {
+            String name = mGroupPopMenuMap.get(i).toString();
+            mGroupPopMenuTexts[i] = name;
+        }
+        mGroupPopupIcon = new int[mGroupPopMenuMap.size()];
+        for (int i = 0; i < mGroupPopMenuMap.size(); i++) {
+            mGroupPopupIcon[i] = R.drawable.icon_favorite;
+        }
+
     }
 
     private void initInternalData() {
-        setGroupPopupList();
         mAttachmentPopMenuIcons = new int[]{
                 R.drawable.menu_photo,
                 R.drawable.menu_write
@@ -166,28 +230,38 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
             case R.id.menu_attachment:
                 showAttachmentPopupDialog();
                 break;
-            case R.id.menu_camera:
-
-                break;
-            case R.id.menu_delete:
-
+            case R.id.menu_delete:{
+             if(mNote!=null){
+                 mNote.setIsWasted(1);
+                 new NoteDao(this).updateNote(mNote);
+                 ToastUtil.showMsg(NoteActivity.this,"删除成功");
+             }else{
+                 onBackPressed();
+             }
+            }
                 break;
             case R.id.menu_get_image:
-
+                ToastUtil.showMsg(NoteActivity.this, "还未实现");
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    //获得groupId和groupName
     public void showGroupPopupList() {
-        ListPopupWindow listPopupWindow = PopupWindowFactory.createListPopUpWindow(this, findViewById(R.id.btn_group_name), null,
-                mGroupPopMenuTexts, new PopupWindowFactory.ListPopUpWindowItemClickListener() {
+        ListPopupWindow listPopupWindow = PopupWindowFactory.createListPopUpWindow(this, findViewById(R.id.btn_group_name),
+                mGroupPopupIcon, mGroupPopMenuTexts, new PopupWindowFactory.ListPopUpWindowItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         Group g = groupList.get(position);
                         btn_new_group.setText(g.getName());
+                        myGroupId = position;
+                        myGroupName = btn_new_group.getText().toString();
+                        Log.d(TAG, "onItemClick: " + g.getName());
                     }
                 });
+        listPopupWindow.show();
+
     }
 
     private void showAttachmentPopupDialog() {
@@ -199,6 +273,7 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
                             case BOTTOM_SHEET_ITEM_PICTURE:
                                 if (EasyPermissions.hasPermissions(NoteActivity.this,
                                         Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                                    closeSoftKeyInput();
                                     callGallery();
                                 } else {
                                     EasyPermissions.requestPermissions(NoteActivity.this,
@@ -208,7 +283,7 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
                                 }
                                 break;
                             case BOTTOM_SHEET_ITEM_FREEHAND:
-
+                                ToastUtil.showMsg(NoteActivity.this, "还未实现");
                                 break;
                         }
                     }
@@ -216,20 +291,98 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
         listPopupWindow.show();
     }
 
-    private void takePhoto() {
-//        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//        File image = AttachmentHelper.createNewAttachmentFile(this, "images", ".jpg");
-//        // 必须使用FileProvider，否则API>=24的设备上运行时，会抛出异常
-//        // Uri photoUri = Uri.fromFile(image);
-//        Uri photoUri = AttachmentHelper.getFileProviderUri(this, image);
-//        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-//        mAttachment.setPath(image.getAbsolutePath());
-//        mAttachment.setUri(photoUri);
-//        startActivityForResult(intent, TAKE_PHOTO);
+    public void dealwithContent() {
+        if(mNote!=null){
+            et_new_content.clearAllLayout();
+        }
+        showDataSync(myContent);
+        //图片点击事件
+        et_new_content.setOnRtImageClickListener(new RichTextEditor.OnRtImageClickListener() {
+            @Override
+            public void onRtImageClick(View view, String imagePath) {
+//                ToastUtil.showMsg(NoteActivity.this, "onRtImageClick!");
+                myContent = getEditData();
+                if (!TextUtils.isEmpty(myContent)) {
+                    List<String> imageList = StringUtils.getTextFromHtml(myContent, true);
+                    if (!TextUtils.isEmpty(imagePath)) {
+                        int currentPosition = imageList.indexOf(imagePath);
+                        List<Uri> dataList = new ArrayList<>();
+                        for (int i = 0; i < imageList.size(); i++) {
+                            dataList.add(ImageUtils.getUriFromPath(imageList.get(i)));
+                        }
+                        iwHelper.show(dataList, currentPosition);
+                    }
+                }
+            }
+        });
+
     }
 
-    public void dealwithExit() {
+    /**
+     * 异步方式显示数据
+     */
+    private void showDataSync(final String html) {
+        Observable.create(new ObservableOnSubscribe<String>() {
+            @Override
+            public void subscribe(ObservableEmitter<String> emitter) {
+                showEditData(emitter, html);
+            }
+        })
+                .subscribeOn(Schedulers.io())//生产事件在io
+                .observeOn(AndroidSchedulers.mainThread())//消费事件在UI线程
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onComplete() {
+                        ToastUtil.showMsg(NoteActivity.this,"加载完成");
+                    }
 
+                    @Override
+                    public void onError(Throwable e) {
+//                        ToastUtil.showMsg(NoteActivity.this,"加载错误");
+//                        Log.e(TAG, "onError: " + e.getMessage());
+                    }
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                                   mDisposable = d;
+                    }
+
+                    @Override
+                    public void onNext(String text) {
+                        try {
+                                       if ( et_new_content != null) {
+                                           if (text.contains("<img") && text.contains("src=")) {
+                                               //imagePath可能是本地路径，也可能是网络地址
+                                               String imagePath = StringUtils.getImgSrc(text);
+                                                et_new_content.addImageViewAtIndex( et_new_content.getLastIndex(), imagePath);
+                                           } else {
+                                                et_new_content.addEditTextAtIndex( et_new_content.getLastIndex(), text);
+                                           }
+                                       }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                });
+    }
+
+
+    /**
+     * 显示数据
+     */
+    private void showEditData(ObservableEmitter<String> emitter, String html) {
+        try {
+            List<String> textList = StringUtils.cutStringByImgTag(html);
+            for (int i = 0; i < textList.size(); i++) {
+                String text = textList.get(i);
+                emitter.onNext(text);
+            }
+            emitter.onComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+            emitter.onError(e);
+        }
     }
 
     private void callGallery() {
@@ -246,13 +399,6 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
                 //参数1 true表示拍照存储在共有目录，false表示存储在私有目录；参数2与 AndroidManifest中authorities值相同，用于适配7.0系统 必须设置
                 .captureStrategy(new CaptureStrategy(true, "com.sendtion.matisse.fileprovider"))//存储到哪里
                 .forResult(REQUEST_CODE_CHOOSE);//请求码
-
-        ToastUtil.showMsg(NoteActivity.this, "callgallery");
-    }
-
-    private void gotoFreehandActivity() {
-//        Intent intent = new Intent(NoteActivity.this, FreeHandActivity.class);
-//        startActivityForResult(intent, BOTTOM_SHEET_ITEM_FREEHAND);
     }
 
     @Override
@@ -278,12 +424,7 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            ToastUtil.showMsg(NoteActivity.this, "该插入图片了！");
             switch (requestCode) {
-                case BOTTOM_SHEET_ITEM_PICTURE: {
-
-                }
-                break;
                 case REQUEST_CODE_CHOOSE:
                     //异步方式插入图片
                     insertImagesSync(data);
@@ -296,8 +437,6 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
      * 异步方式插入图片
      */
     private void insertImagesSync(final Intent data) {
-        ToastUtil.showMsg(NoteActivity.this, "insertImageSysn");
-
         Observable.create(new ObservableOnSubscribe<String>() {
             @Override
             public void subscribe(ObservableEmitter<String> emitter) {
@@ -314,11 +453,6 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
 //                        Log.d("NoteActivity", "###imagePath=" + imagePath);
                         emitter.onNext(imagePath);
                     }
-
-                    // 测试插入网络图片 http://pics.sc.chinaz.com/files/pic/pic9/201904/zzpic17414.jpg
-                    //emitter.onNext("http://pics.sc.chinaz.com/files/pic/pic9/201903/zzpic16838.jpg");
-//                    emitter.onNext("http://b.zol-img.com.cn/sjbizhi/images/10/640x1136/1572123845476.jpg");
-//                    emitter.onNext("https://img.ivsky.com/img/tupian/pre/201903/24/richu_riluo-013.jpg");
                     emitter.onComplete();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -336,7 +470,7 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
 
                     @Override
                     public void onError(Throwable e) {
-                        ToastUtil.showMsg(NoteActivity.this, e.getMessage());
+                        ToastUtil.showMsg(NoteActivity.this, "图片异步onError!");
                     }
 
                     @Override
@@ -352,18 +486,12 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
     protected void onStop() {
         super.onStop();
-
         //如果APP处于后台，或者手机锁屏，则保存数据
         if (CommonUtil.isAppOnBackground(getApplicationContext()) ||
                 CommonUtil.isLockScreeen(getApplicationContext())) {
-//            saveNoteData(true);//处于后台时保存数据
+            saveNoteData();//处于后台时保存数据
         }
         if (subsLoading != null && subsLoading.isDisposed()) {
             subsLoading.dispose();
@@ -373,15 +501,109 @@ public class NoteActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
-//    private void saveNoteData(boolean isBackground) {
-//        String noteTitle = et_new_title.getText().toString();
-//        String noteContent = getEditData();
-//        //获得分组名！！！！！我的天T T
-//        String groupName;
-//        //获得checkbox的值，是则插入数据库 然后再插入复习计划表，否则直接插入数据库即可
-////        String noteTime = tv_new_time.getText().toString();
-//
-//
-//    }
+    private String getEditData() {
+        StringBuilder content = new StringBuilder();
+        try {
+            List<RichTextEditor.EditData> editList = et_new_content.buildEditData();
+            for (RichTextEditor.EditData itemData : editList) {
+                if (itemData.inputStr != null) {
+                    content.append(itemData.inputStr);
+                } else if (itemData.imagePath != null) {
+                    content.append("<img src=\"").append(itemData.imagePath).append("\"/>");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return content.toString();
+    }
+
+    private void saveNoteData() {
+        myTitle = et_new_title.getText().toString();
+        myContent = getEditData();
+        //groupId,groupName在showgroupPop()中获得
+        myCreateTime = CommonUtil.date2string(new Date());
+        if (cb_add_review.isChecked()) {
+            isAdded = 1;
+        }
+        if(mNote!=null){
+            mNote.setTitle(myTitle);
+            mNote.setContent(myContent);
+            mNote.setCreateTime(myCreateTime);
+            mNote.setGroupId(myGroupId);
+            mNote.setGroupName(myGroupName);
+            mNote.setIsWasted(0);
+            mNote.setIsAdded(isAdded);
+            mNote.setIsStared(0);
+            new NoteDao(this).updateNote(mNote);
+        }else{
+            Note note = new Note();
+            note.setTitle(myTitle);
+            note.setContent(myContent);
+            note.setGroupId(myGroupId);
+            note.setGroupName(myGroupName);
+            note.setCreateTime(myCreateTime);
+            note.setIsWasted(isWasted);
+            note.setIsAdded(isAdded);
+            long ret = new NoteDao(this).insertNote(note,name);
+            Log.d(TAG, "saveNoteData: " + ret);
+        }
+    }
+
+    private void dealwithExit() {
+        builder = new AlertDialog.Builder(NoteActivity.this);
+        builder.setMessage("是否保存笔记?")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ToastUtil.showMsg(NoteActivity.this, "保存!");
+                        saveNoteData();
+                        finish();
+                    }
+                })
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                }).show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+
+    /**
+     * 打开软键盘
+     */
+    private void openSoftKeyInput() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null && !imm.isActive() && et_new_content != null) {
+            et_new_content.requestFocus();
+            //第二个参数可设置为0
+            //imm.showSoftInput(et_content, InputMethodManager.SHOW_FORCED);//强制显示
+            imm.showSoftInputFromInputMethod(et_new_content.getWindowToken(),
+                    InputMethodManager.SHOW_FORCED);
+        }
+
+    }
+
+    /**
+     * 关闭软键盘
+     */
+    private void closeSoftKeyInput() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        if (imm != null && imm.isActive() && getCurrentFocus() != null) {
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                    InputMethodManager.HIDE_NOT_ALWAYS);
+            //imm.hideSoftInputFromInputMethod();//据说无效
+            //imm.hideSoftInputFromWindow(et_content.getWindowToken(), 0); //强制隐藏键盘
+            //如果输入法在窗口上已经显示，则隐藏，反之则显示
+            //imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+    }
 
 }
+

@@ -26,12 +26,12 @@ public class UserDao {
         long ret = 0;
 
         sql = "select * from user where name=" + name;
-        cursor = db.rawQuery(sql, null);//找不到这个cursor是不是就是空的了？？
+        cursor = db.rawQuery(sql, null);
         if (cursor.moveToFirst()) {
             ToastUtil.showMsg(mContext, "用户名已存在");
         } else {
             Log.d("TAG", "register successfully!");
-            sql = "insert into user(name,pwd,image)"//这需要在加两个null吗？
+            sql = "insert into user(name,pwd,image)"
                     + "values(?,?,null)";
             SQLiteStatement stat = db.compileStatement(sql);
             db.beginTransaction();
@@ -44,6 +44,15 @@ public class UserDao {
             db.close();
         }
         return ret;
+    }
+
+    public int getUserId(String name) {
+        int user_id = -1;
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String sql = "select id from user where name=" + name;
+        Cursor cursor = db.rawQuery(sql, null);
+        user_id = cursor.getInt(cursor.getColumnIndex("id"));
+        return user_id;
     }
 
     public boolean login(String name, String pwd) {
@@ -61,7 +70,6 @@ public class UserDao {
     public void addImage() {
 
     }
-
 
 
 }

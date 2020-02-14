@@ -1,6 +1,7 @@
 package com.example.notebook;
 
 import android.app.Application;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.widget.FrameLayout;
@@ -10,13 +11,33 @@ import android.widget.RelativeLayout;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.example.notebook.Util.CommonUtil;
 import com.example.notebook.Util.TransformationScale;
+import com.example.notebook.db.GroupDao;
+import com.example.notebook.db.TaskDao;
+import com.example.notebook.db.UserDao;
 import com.sendtion.xrichtext.IImageLoader;
 import com.sendtion.xrichtext.XRichText;
 
+import java.util.Date;
 
 
 public class BaseApplication extends Application {
+    private static final String TAG = "BaseApplication";
+    private static BaseApplication baseApplication;
+    private UserDao userDao;
+    private GroupDao groupDao;
+    private TaskDao taskDao;
+
+    private String user_name;
+    private String user_pwd;
+
+    public static Context getInstance() {
+        if (baseApplication == null) {
+            baseApplication = new BaseApplication();
+        }
+        return baseApplication;
+    }
 
     @Override
     public void onCreate() {
@@ -63,6 +84,22 @@ public class BaseApplication extends Application {
         });
     }
 
+
+    public String getUser_name() {
+        return user_name;
+    }
+
+    public void setUser_name(String user_name) {
+        this.user_name = user_name;
+    }
+
+    public String getUser_pwd() {
+        return user_pwd;
+    }
+
+    public void setUser_pwd(String user_pwd) {
+        this.user_pwd = user_pwd;
+    }
 
 }
 

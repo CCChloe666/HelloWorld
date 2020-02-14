@@ -29,10 +29,10 @@ public class GroupDao {
      *
      * @return
      */
-    public List<Group> queryGroupAll() {
+    public List<Group> queryGroupAll(String name) {
         this.db = dbHelper.getWritableDatabase();
         List<Group> groupList = new ArrayList<Group>();
-        String sql = "select * from group_note";
+        String sql = "select * from group_note where user_name=" + name;
         Group group = null;
 
         Cursor cursor = db.rawQuery(sql, null);
@@ -106,16 +106,15 @@ public class GroupDao {
     /**
      * 添加一个分类
      */
-    public void insertGroup(String groupName, String createTime) {
+    public void insertGroup(String groupName, String createTime,String name) {
         this.db = dbHelper.getWritableDatabase();
         Cursor cursor = db.query("group_note", null, "name=?", new String[]{groupName}, null, null, null);
         if (!cursor.moveToFirst()) {
             ContentValues values = new ContentValues();
             values.put("name", groupName);
             values.put("createTime", createTime);
+            values.put("user_name",name);
             db.insert("group_note", null, values);
-        } else {
-            ToastUtil.showMsg(mContext, "笔记本已存在");
         }
         if (cursor != null && !cursor.isClosed()) {
             cursor.close();
@@ -142,16 +141,14 @@ public class GroupDao {
     /**
      * 删除一个分类
      */
-    public int deleteGroup(int groupId){
+    public int deleteGroup(int groupId) {
         this.db = dbHelper.getWritableDatabase();
-        int ret = db.delete("group_note","id=?",new String[]{groupId+""});
+        int ret = db.delete("group_note", "id=?", new String[]{groupId + ""});
         if (db != null) {
             db.close();
         }
         return ret;
     }
-
-
 
 
 }

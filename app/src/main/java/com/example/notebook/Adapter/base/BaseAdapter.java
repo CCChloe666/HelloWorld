@@ -1,6 +1,7 @@
 package com.example.notebook.Adapter.base;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public abstract class BaseAdapter<T,V extends IAdapterItem> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private static final String TAG = "BaseAdapter";
     protected Context mContext;
     protected List<T> mDatas;
     private OnItemClickListener mItemClickListener;
@@ -22,9 +24,10 @@ public abstract class BaseAdapter<T,V extends IAdapterItem> extends RecyclerView
     protected abstract V inflateView(Context context, ViewGroup parent);
 
     public void refreshData(List<T> datas) {
+        notifyDataSetChanged();
+        Log.d(TAG, "refreshData: "+datas.size());
         if (datas == null) return;
         this.mDatas = datas;
-        notifyDataSetChanged();
     }
 
     @Override

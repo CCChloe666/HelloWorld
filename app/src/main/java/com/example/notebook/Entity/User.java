@@ -5,7 +5,9 @@ import android.media.Image;
 import org.litepal.annotation.Column;
 import org.litepal.crud.LitePalSupport;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
 
     private int id;
 
